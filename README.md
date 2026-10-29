@@ -6,7 +6,7 @@
 
 저장소 최상위의 `index.html`을 다운로드한 뒤 브라우저에서 엽니다. SVG 그림, CSS, JavaScript, 3D 라이브러리가 이 파일 하나에 포함되어 있어 인터넷이나 개발 서버가 필요하지 않습니다. GitHub의 코드 보기 화면은 HTML을 실행하지 않으므로 파일을 다운로드해서 열어야 합니다.
 
-JavaScript가 차단되어도 네프론 그림과 물질 이동 표가 표시됩니다. 애니메이션과 상황 선택에는 JavaScript가 필요하며, 3D만 WebGL이 필요합니다.
+제목, 화면 구성, 네프론 그림은 HTML에 직접 포함되어 JavaScript가 차단되어도 표시됩니다. 애니메이션과 상황 선택에는 JavaScript가 필요하며, 3D만 WebGL이 필요합니다. 초기화 실패 시 별도의 그림과 이동 표를 표시합니다.
 
 ## 개발
 
@@ -26,6 +26,8 @@ npm run build
 ```
 
 일반 웹 배포는 `dist/` 전체를 올립니다. 상대 경로를 사용하므로 `/sample/` 같은 하위 경로도 지원합니다. 파일 하나만 공유하려면 최상위 `index.html` 또는 `dist/standalone.html`을 사용합니다.
+
+GitHub Pages를 `main` 브랜치의 `/(root)`에서 게시하는 경우 커밋된 최상위 `index.html`을 그대로 사용합니다. `.nojekyll`을 포함하여 정적 파일을 그대로 게시합니다. 게시 주소는 https://eumjoo.github.io/sample/ 입니다.
 
 ## 사용법
 

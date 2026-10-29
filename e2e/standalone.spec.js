@@ -35,10 +35,11 @@ test('picture and substance routes remain visible with JavaScript disabled', asy
   const page=await context.newPage();
   await context.setOffline(true);
   await page.setContent(await readFile(new URL('../index.html',import.meta.url),'utf8'));
-  await expect(page.locator('#boot-fallback svg')).toBeVisible();
-  await expect(page.locator('#boot-fallback table')).toContainText('혈구 · 단백질');
-  await expect(page.locator('#boot-fallback')).toContainText('수분 부족');
-  await expect(page.locator('#app')).toBeHidden();
+  await expect(page.locator('#diagram svg')).toBeVisible();
+  await expect(page.locator('#app')).toContainText('혈구·단백질은 혈관 안에');
+  await expect(page.locator('#scenario')).toBeVisible();
+  await expect(page.locator('#urine')).toHaveText('1.65');
+  await expect(page.locator('#app')).toBeVisible();
   await context.close();
 });
 
@@ -55,4 +56,15 @@ test('production build loads from a nested website path', async ({page})=>{
   await page.selectOption('#scenario','hydrated');
   await expect(page.locator('#scenario-note')).toContainText('물을 충분히');
   expect(errors).toEqual([]);
+});
+
+test('startup error still leaves a readable nephron picture',async({page})=>{
+  await page.evaluate(()=>{
+    SVGPathElement.prototype.getTotalLength=function(){throw new Error('Simulated SVG initialization failure');};
+  });
+  await page.setContent(await readFile(new URL('../index.html',import.meta.url),'utf8'));
+  await expect(page.locator('#boot-fallback')).toBeVisible();
+  await expect(page.locator('#boot-fallback svg')).toBeVisible();
+  await expect(page.locator('#startup-status')).toContainText('네프론 그림을 표시');
+  await expect(page.locator('#boot-fallback table')).toContainText('포도당 · 아미노산');
 });
