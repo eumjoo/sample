@@ -49,3 +49,4 @@ document.querySelector('#rotate').addEventListener('click',e=>{const b=e.current
 document.querySelector('#reset-view').addEventListener('click',()=>scene?.reset());
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-view]').forEach(el=>el.classList.toggle('active',el===b));scene?.view(b.dataset.view);}));
 selectStage(0);
+document.documentElement.dataset.appReady = 'true';

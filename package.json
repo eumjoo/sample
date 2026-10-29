@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vite build",
+    "build": "vite build && node scripts/build-standalone.mjs",
+    "build:standalone": "node scripts/build-standalone.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --test src/model.test.js",
     "test:e2e": "playwright test"
@@ -14,6 +15,7 @@
     "three": "^0.180.0"
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "vite": "^7.1.7",
     "@playwright/test": "^1.56.0"
   }

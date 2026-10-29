@@ -2,8 +2,7 @@ const NS = 'http://www.w3.org/2000/svg';
 const colors = { blood: '#f28d9d', protein: '#bb9aff', urea: '#f2c46e', water: '#6cdbf2', glucose: '#94e3a4', amino: '#f5ac78' };
 
 // SVG works without WebGL or a GPU. Paths are also used to position particles.
-export function createDiagram(container) {
-  container.innerHTML = `<svg viewBox="0 0 760 550" role="img" aria-label="네프론의 여과, 재흡수, 요소 재순환을 보여주는 그림" class="nephron-diagram">
+export const diagramMarkup = `<svg viewBox="0 0 760 550" role="img" aria-label="네프론의 여과, 재흡수, 요소 재순환을 보여주는 그림" class="nephron-diagram">
     <defs>
       <linearGradient id="tube" x1="0" x2="1"><stop stop-color="#d6a85e"/><stop offset=".5" stop-color="#ffe3a3"/><stop offset="1" stop-color="#c49f63"/></linearGradient>
       <marker id="flow-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#9acac4"/></marker>
@@ -30,6 +29,9 @@ export function createDiagram(container) {
     </g>
     <g id="diagram-particles"></g>
   </svg>`;
+
+export function createDiagram(container) {
+  container.innerHTML = diagramMarkup;
   const svg = container.querySelector('svg');
   const particles = [];
   const layer = svg.querySelector('#diagram-particles');
