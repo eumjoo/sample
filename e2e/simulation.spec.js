@@ -1,25 +1,50 @@
 import { test, expect } from '@playwright/test';
+test('middle-school labels and slow motion match the lesson',async({page})=>{
+ await page.clock.install({time:new Date('2026-10-30T00:00:00Z')});
+ await page.clock.pauseAt(new Date('2026-10-30T00:00:01Z'));
+ await page.goto('/');
+ const content=await page.locator('#app').innerText();
+ expect(content).not.toMatch(/근위|원위|헨레|헨리|집합관|ADH|무기염류|재순환/);
+ await expect(page.locator('#speed')).toHaveText('0.5×');
+ await expect(page.locator('[data-substance]')).toHaveCount(7);
+ const particle=page.locator('#diagram-particles [data-species=blood][data-route=blood-in]').first();
+ const position=()=>particle.evaluate(el=>({x:Number(el.getAttribute('cx')),y:Number(el.getAttribute('cy'))}));
+ const a=await position();await page.clock.runFor(1000);const b=await position();
+ const slow=Math.hypot(b.x-a.x,b.y-a.y);
+ expect(slow).toBeGreaterThan(5);expect(slow).toBeLessThan(18);
+ await page.locator('#speed').click();
+ await expect(page.locator('#speed')).toHaveText('0.25×');
+ await page.clock.runFor(1000);const c=await position();
+ expect(Math.hypot(c.x-b.x,c.y-b.y)).toBeLessThan(slow*.7);
+ await page.locator('[data-stage="2"]').click();
+ await expect(page.locator('#detail-title')).toHaveText('모세혈관 → 세뇨관');
+ const path=page.locator('#diagram #secrete');
+ expect(await path.evaluate(el=>el.getPointAtLength(0).y)).toBeLessThan(await path.evaluate(el=>el.getPointAtLength(el.getTotalLength()).y));
+ await page.getByRole('button',{name:'3D 모델',exact:true}).click();
+ await expect(page.locator('#nephron')).toBeVisible();
+ const labels=await page.locator('.anatomy-label').allTextContents();
+ expect(labels).toEqual(['토리','세뇨관']);
+});
 test('scenarios, substances, stages and playback work in 3D', async ({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/');
  await expect(page.locator('#fallback')).toBeHidden();
  await expect(page.locator('#scenario option')).toHaveCount(3);
- const normal=Number(await page.locator('#urine').textContent());
+ await expect(page.locator('#urine')).toHaveText('보통');
  await page.selectOption('#scenario','dehydrated');
- const dry=Number(await page.locator('#urine').textContent());
+ await expect(page.locator('#urine')).toHaveText('적음');
  await page.selectOption('#scenario','hydrated');
- const wet=Number(await page.locator('#urine').textContent());
- expect(dry).toBeLessThan(normal);expect(wet).toBeGreaterThan(normal);
+ await expect(page.locator('#urine')).toHaveText('많음');
  for(const substance of ['blood','protein','urea','water','glucose','amino']){
   await page.locator(`[data-substance="${substance}"]`).click();
   await expect(page.locator(`[data-substance="${substance}"]`)).toHaveAttribute('aria-pressed','true');
   await expect(page.locator('#substance-note')).not.toBeEmpty();
  }
  await page.locator('[data-stage="2"]').click();
- await expect(page.locator('#detail-text')).toContainText('재순환');
+ await expect(page.locator('#detail-text')).toContainText('노폐물');
  await page.getByRole('button',{name:'일시정지',exact:true}).click();
  await expect(page.locator('#play-status')).toContainText('일시정지');
- await page.locator('#speed').click();await expect(page.locator('#speed')).toHaveText('2×');
+ await page.locator('#speed').click();await expect(page.locator('#speed')).toHaveText('0.25×');
  await page.getByRole('button',{name:'3D 모델',exact:true}).click();
  await expect(page.locator('#nephron')).toBeVisible();
  await page.getByRole('button',{name:'자동 회전',exact:true}).click();
@@ -41,7 +66,7 @@ test('diagram and moving particles work without WebGL', async ({page}) => {
  });
  await page.goto('/');
  await expect(page.locator('#diagram svg')).toBeVisible();
- const particle=page.locator('#diagram-particles circle[data-species=water]').first();
+ const particle=page.locator('#diagram-particles [data-species=water]').first();
  const before=await particle.getAttribute('cx');
  await expect.poll(()=>particle.getAttribute('cx')).not.toBe(before);
  await page.getByRole('button',{name:'3D 모델',exact:true}).click();
@@ -49,7 +74,7 @@ test('diagram and moving particles work without WebGL', async ({page}) => {
  await expect(page.locator('#diagram svg')).toBeVisible();
  await page.selectOption('#scenario','dehydrated');
  await page.locator('[data-substance=water]').click();
- const wetParticles=page.locator('#diagram-particles circle[data-species=water]');
+ const wetParticles=page.locator('#diagram-particles [data-species=water]');
  expect(await wetParticles.count()).toBeGreaterThan(0);
  await page.getByRole('button',{name:'일시정지',exact:true}).click();
  await page.waitForTimeout(80);

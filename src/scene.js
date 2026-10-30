@@ -23,7 +23,7 @@ export function createScene(canvas, onError = () => {}) {
  const flows=[
   path([[-2.9,1.8,.3],[-2.6,1.5,.65],[-2.1,1.55,.5],[-1.8,2.1,.25]]),
   path([[-1.2,1.7,.35],[-1.7,1.25,.55],[-2.2,.85,-.3]]),
-  path([[2.65,-2.1,0],[1.7,-2.4,.5],[.9,-2.1,.5],[.3,-1.8,0]])
+  path([[.9,-.8,-.5],[.65,-.9,.3],[.3,-1,0]])
  ];
  const waterFlow=path([[2.65,-1,.2],[2.15,-1.1,.65],[1.4,-1.2,.2],[.9,-1.3,-.4]]);
  const colors=[0x64d9c0,0xf0bc72,0xb39aef];
@@ -34,10 +34,10 @@ export function createScene(canvas, onError = () => {}) {
  for(const species of ['water','urea','glucose','amino'])addParticles(flows[0],5,species,0);
  for(const species of ['water','urea']){addParticles(tubule,24,species);addParticles(duct,10,species);}
  for(const species of ['glucose','amino']){addParticles(tubule,7,species,-1,0,.22);addParticles(flows[1],7,species,1);}
- addParticles(flows[1],6,'water',1);addParticles(flows[1],3,'urea',1);
+ addParticles(flows[1],6,'water',1);
  addParticles(flows[2],7,'urea',2);addParticles(waterFlow,12,'water',3);
  const arrows=[];flows.forEach((c,i)=>{const pos=c.getPoint(.62),dir=c.getTangent(.62);const a=new THREE.ArrowHelper(dir,pos,.32,colors[i],.14,.12);model.add(a);arrows.push(a);});
- let state={stage:0,playing:true,speed:1,adh:45,gfr:125,substance:'all'};
+ let state={stage:0,playing:true,speed:.5,adh:45,gfr:125,substance:'all'};
  const resize=()=>{const {width,height}=canvas.getBoundingClientRect();renderer.setSize(Math.max(width,1),Math.max(height,1),false);camera.aspect=Math.max(width,1)/Math.max(height,1);camera.updateProjectionMatrix();};const observer=new ResizeObserver(resize);observer.observe(canvas);resize();
  let last=performance.now(), disposed=false;
  const fail=()=>{if(disposed)return;renderer.setAnimationLoop(null);queueMicrotask(onError);};
@@ -45,6 +45,6 @@ export function createScene(canvas, onError = () => {}) {
  canvas.addEventListener('webglcontextlost',contextLost);
  const dispose=()=>{if(disposed)return;disposed=true;renderer.setAnimationLoop(null);observer.disconnect();controls.dispose();canvas.removeEventListener('webglcontextlost',contextLost);model.traverse(object=>{object.geometry?.dispose();if(object.material){for(const material of [object.material].flat())material.dispose();}});renderer.dispose();};
 
- renderer.setAnimationLoop((timestamp)=>{try {const now=Number.isFinite(timestamp)?timestamp:performance.now();const delta=Math.max(0,Math.min((now-last)/1000,.05));last=now;controls.update();for(const p of particles){p.mesh.visible=(state.substance==='all'||p.species===state.substance)&&(p.stage<0||p.stage===state.stage||(p.stage===3&&state.stage===1));if(p.species==='water'&&p.curve===duct)p.mesh.visible=p.mesh.visible&&p.index<Math.round(3+(100-state.adh)*.07);if(p.stage===3)p.mesh.visible=p.mesh.visible&&p.index<Math.round(3+state.adh*.09);if(state.playing)p.t=(p.t+delta*.13*state.speed*(p.stage===3?.3+state.adh/100:state.gfr/125))%1;p.mesh.position.copy(p.curve.getPoint(p.start+p.t*(p.end-p.start)));p.mesh.scale.setScalar(p.species==='blood'?1.6:p.species==='protein'?1.3:p.stage>=0?1.2:.85); }arrows.forEach((a,i)=>a.visible=i===state.stage);renderer.render(scene,camera);}catch(error){fail();}});
+ renderer.setAnimationLoop((timestamp)=>{try {const now=Number.isFinite(timestamp)?timestamp:performance.now();const delta=Math.max(0,Math.min((now-last)/1000,.05));last=now;controls.update();for(const p of particles){p.mesh.visible=(state.substance==='all'||p.species===state.substance)&&(p.stage<0||p.stage===state.stage||(p.stage===3&&state.stage===1));if(p.species==='water'&&p.curve===duct)p.mesh.visible=p.mesh.visible&&p.index<Math.round(3+(100-state.adh)*.07);if(p.stage===3)p.mesh.visible=p.mesh.visible&&p.index<Math.round(3+state.adh*.09);if(state.playing)p.t=(p.t+delta*.3/p.curve.getLength()*state.speed*(p.stage===3?.3+state.adh/100:state.gfr/125))%1;p.mesh.position.copy(p.curve.getPoint(p.start+p.t*(p.end-p.start)));p.mesh.scale.setScalar(p.species==='blood'?1.6:p.species==='protein'?1.3:p.stage>=0?1.2:.85); }arrows.forEach((a,i)=>a.visible=i===state.stage);renderer.render(scene,camera);}catch(error){fail();}});
  return {dispose,setState(v){state=v;},rotate(on){controls.autoRotate=on;},reset(){controls.autoRotate=false;camera.position.set(0,.8,15);controls.target.set(0,-.1,0);controls.update();},view(type){camera.position.set(type==='front'?0:5,type==='front'?.1:2,15);controls.update();}};
 }
