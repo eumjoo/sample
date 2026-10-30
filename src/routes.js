@@ -7,8 +7,16 @@ export const routes = {
   glucose: ['inlet', 'filter', 'earlyTubule', 'reabsorb', 'venousReturn'],
   amino: ['inlet', 'filter', 'earlyTubule', 'reabsorb', 'venousReturn'],
 };
+export const waterRoutes = {
+  waterReabsorbed: ['inlet', 'filter', 'waterEarlyTubule', 'waterReabsorb', 'waterVenousReturn'],
+  waterExcreted: ['inlet', 'filter', 'waterEarlyTubule', 'waterRemainingTubule', 'waterUrine'],
+};
+export function waterSplit(rate = 80) {
+  const reabsorbed = Math.round(Math.max(0, Math.min(100, rate)) / 5);
+  return { total: 20, reabsorbed, excreted: 20 - reabsorbed };
+}
 export function createJourney(species, paths) {
-  const segments = routes[species].map(id => ({ id, ...paths[id] }));
+  const segments = (routes[species] ?? waterRoutes[species]).map(id => ({ id, ...paths[id] }));
   const length = segments.reduce((sum, segment) => sum + segment.length, 0);
   return {
     length,

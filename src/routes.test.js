@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createJourney } from './routes.js';
+import { createJourney, waterSplit } from './routes.js';
 
-const ids=['inlet','retainedBlood','bloodToSecretion','filter','earlyTubule','reabsorb','venousReturn','secrete','lateTubule','urine'];
+const ids=['inlet','retainedBlood','bloodToSecretion','filter','earlyTubule','reabsorb','venousReturn','secrete','lateTubule','urine','waterEarlyTubule','waterReabsorb','waterVenousReturn','waterRemainingTubule','waterUrine'];
 const paths=Object.fromEntries(ids.map((id,index)=>[id,{length:10+index,at:t=>({id,t})}]));
 function trace(species){
  const journey=createJourney(species,paths);
@@ -23,4 +23,14 @@ test('a complete cycle restarts at the artery without a phantom terminal segment
  const journey=createJourney('urea',paths);
  assert.equal(journey.sample(journey.length).region,'inlet');
  assert.equal(journey.sample(-.1).region,'urine');
+});
+test('all water filters before branching to blood or urine',()=>{
+ assert.deepEqual(trace('waterReabsorbed'),['inlet','filter','waterEarlyTubule','waterReabsorb','waterVenousReturn']);
+ assert.deepEqual(trace('waterExcreted'),['inlet','filter','waterEarlyTubule','waterRemainingTubule','waterUrine']);
+});
+test('water particle counts conserve the whole amount for each comparison',()=>{
+ for(const [rate,returned,excreted] of [[80,16,4],[95,19,1],[50,10,10]]){
+  assert.deepEqual(waterSplit(rate),{total:20,reabsorbed:returned,excreted});
+  assert.equal(returned+excreted,20);
+ }
 });

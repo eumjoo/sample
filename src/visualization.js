@@ -6,7 +6,7 @@ export function createVisualization() {
   const status = document.querySelector('#fallback');
   const diagram = createDiagram(diagramElement);
   let scene, loading = false, requested = 'front';
-  let state = { stage: 0, substance: 'all', playing: true, speed: .5, adh: 45, gfr: 125 };
+  let state = { stage: 0, substance: 'all', playing: true, speed: .5, waterReabsorption: 80, gfr: 125 };
   function showDiagram(message = '') {
     canvas.hidden = true;
     diagramElement.hidden = false;

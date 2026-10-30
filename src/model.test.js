@@ -13,5 +13,6 @@ test('water conservation changes urine while the teaching model fully reabsorbs 
   assert.ok(calculate(presets.dehydrated).urine < calculate(presets.hydrated).urine);
   assert.equal(calculate(presets.normal).glucoseExcretion, 0);
   assert.equal(calculate({...presets.normal, glucose: 320}).glucoseExcretion, 0);
-  assert.ok(calculate({...presets.normal, adh: 90}).urine < calculate({...presets.normal, adh: 10}).urine);
+  assert.ok(calculate({...presets.normal, waterReabsorption: 95}).urine < calculate({...presets.normal, waterReabsorption: 50}).urine);
+  for(const preset of Object.values(presets))assert.ok(Math.abs(calculate(preset).waterPercent-preset.waterReabsorption)<1e-9);
 });

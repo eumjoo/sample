@@ -1,11 +1,46 @@
 import { test, expect } from '@playwright/test';
+test('process cards precede the figure and scenario water amounts match both renderers',async({page})=>{
+ const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ await page.goto('/');
+ const cards=await page.locator('.process-section').boundingBox();
+ const figure=await page.locator('.visual-panel').boundingBox();
+ expect(cards.y+cards.height).toBeLessThanOrEqual(figure.y);
+ for(const label of await page.locator('#diagram [data-process-label]').all())expect(await label.evaluate(el=>Number(el.getAttribute('font-size')||getComputedStyle(el).fontSize.replace('px','')))).toBeGreaterThanOrEqual(24);
+ await page.locator('[data-substance=water]').click();
+ await page.getByRole('button',{name:'일시정지',exact:true}).click();
+ for(const [scenario,rate,count] of [['normal',80,16],['dehydrated',95,19],['hydrated',50,10]]){
+  await page.locator(`[data-water-scenario="${scenario}"]`).click();
+  await expect(page.locator('#scenario')).toHaveValue(scenario);
+  await expect(page.locator('#water-reabsorbed')).toHaveText(`${rate}개 · ${rate}%`);
+  await expect(page.locator('#water-excreted')).toHaveText(`${100-rate}개 · ${100-rate}%`);
+  await expect(page.locator('#water-drops .returned')).toHaveCount(count);
+  await expect(page.locator('#water-drops .excreted')).toHaveCount(20-count);
+  await expect(page.locator('#diagram-particles [data-species=water][data-destination=returned]')).toHaveCount(count);
+  await expect(page.locator('#diagram-particles [data-species=water][data-destination=excreted]')).toHaveCount(20-count);
+  const water=await page.locator('#diagram-particles [data-species=water]').evaluateAll(elements=>elements.map(el=>({region:el.dataset.region,destination:el.dataset.destination})));
+  for(const particle of water){
+   const allowed=particle.destination==='returned'?['inlet','filter','waterEarlyTubule','waterReabsorb','waterVenousReturn']:['inlet','filter','waterEarlyTubule','waterRemainingTubule','waterUrine'];
+   expect(allowed).toContain(particle.region);
+  }
+  await expect(page.locator('#substance-note')).toContainText('100% 여과');
+ }
+ await page.getByRole('button',{name:'3D 모델',exact:true}).click();
+ await expect(page.locator('#nephron')).toBeVisible();
+ await expect(page.locator('#nephron')).toHaveAttribute('data-water-returned','10');
+ await page.locator('[data-water-scenario=dehydrated]').click();
+ await expect(page.locator('#nephron')).toHaveAttribute('data-water-returned','19');
+ await expect(page.locator('#nephron')).toHaveAttribute('data-water-excreted','1');
+ await page.getByRole('button',{name:'모든 설정 초기화',exact:true}).click();
+ await expect(page.locator('#water-reabsorbed')).toContainText('80%');
+ expect(errors).toEqual([]);
+});
 test('particles obey complete 100% teaching-model routes in every scenario and stage',async({page})=>{
  await page.goto('/');
  for(const scenario of ['normal','dehydrated','hydrated']){
   await page.selectOption('#scenario',scenario);
   for(const stage of [0,1,2]){
    await page.locator(`[data-stage="${stage}"]`).click();
-   await expect.poll(()=>page.locator('#diagram-particles [data-region]').count()).toBe(50);
+   await expect.poll(()=>page.locator('#diagram-particles [data-region]').count()).toBe(70);
    const samples=await page.locator('#diagram-particles [data-region]').evaluateAll(elements=>elements.map(el=>({species:el.dataset.species,region:el.dataset.region,x:Number(el.getAttribute('cx')),y:Number(el.getAttribute('cy'))})));
    for(const p of samples){
     if(p.species==='urea'){

@@ -1,4 +1,4 @@
-import { createJourney, routes } from './routes.js';
+import { createJourney, routes, waterSplit } from './routes.js';
 const NS = 'http://www.w3.org/2000/svg';
 const colors = { blood: '#f28d9d', protein: '#bb9aff', urea: '#f2c46e', water: '#6cdbf2', glucose: '#94e3a4', amino: '#f5ac78' };
 
@@ -19,7 +19,7 @@ export const diagramMarkup = `<svg viewBox="0 0 1000 650" role="img" aria-label=
   <defs>
    <linearGradient id="tube" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#dcefff"/><stop offset=".5" stop-color="#a9dcf4"/><stop offset="1" stop-color="#7abbdc"/></linearGradient>
    <marker id="flow-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#356da0"/></marker>
-   <marker id="process-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#d45c68"/></marker>
+   <marker id="process-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#d45c68"/></marker>
   </defs>
   <rect x="4" y="4" width="992" height="642" rx="17" fill="#fffdf9" stroke="#cbd7e3" stroke-width="5"/>
   <g font-family="sans-serif">
@@ -34,18 +34,18 @@ export const diagramMarkup = `<svg viewBox="0 0 1000 650" role="img" aria-label=
     <path id="tubule" d="M330 337 V362 Q330 385 355 385 H900" stroke="url(#tube)" stroke-width="27"/>
     <path id="duct" d="M900 385 H968" stroke="#97d2ee" stroke-width="27"/>
     <path d="M398 385 H430 M811 385 H845 M926 385 H947" stroke="#356da0" stroke-width="3" marker-end="url(#flow-arrow)"/>
-    <path id="filter" d="M330 288 V350" stroke="#d45c68" stroke-width="5" marker-end="url(#process-arrow)"/>
-    <path id="reabsorb" d="M530 380 V333" stroke="#d45c68" stroke-width="5" marker-end="url(#process-arrow)"/>
+    <path id="filter" d="M330 288 V350" stroke="#d45c68" stroke-width="8" marker-end="url(#process-arrow)"/>
+    <path id="reabsorb" d="M530 380 V333" stroke="#d45c68" stroke-width="8" marker-end="url(#process-arrow)"/>
     <path id="water-return" d="M580 380 V333" stroke="#68abc7" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#flow-arrow)"/>
-    <path id="secrete" d="M680 335 V379" stroke="#d45c68" stroke-width="5" marker-end="url(#process-arrow)"/>
+    <path id="secrete" d="M680 335 V379" stroke="#d45c68" stroke-width="8" marker-end="url(#process-arrow)"/>
     <path d="M252 195 L300 264 M805 195 V303 L680 320 M300 478 L330 355 M502 478 L530 404 M837 478 V420 H955 V403" stroke="#adb7c2" stroke-width="1.5" stroke-dasharray="3 4"/>
    </g>
    <g font-size="16" fill="#34445a"><text x="206" y="215">콩팥 동맥 →</text><text x="273" y="273">토리</text><text x="207" y="335">보먼주머니</text><text x="411" y="420">세뇨관</text><text x="759" y="319">모세혈관</text><text x="721" y="507">콩팥 정맥 ↓</text><text x="907" y="428">오줌 →</text></g>
-   <g font-size="15" font-weight="700" fill="#3c5870"><text x="349" y="348">여과 ↓</text><text x="475" y="306">재흡수 ↑</text><text x="659" y="305">분비 ↓</text></g>
-   <g data-process="0"><rect x="35" y="478" width="285" height="135" rx="10" fill="#fff" stroke="#a6b9cb" stroke-width="2"/><path d="M45 478 H310 Q320 478 320 488 V513 H35 V488 Q35 478 45 478" fill="#e0edf8"/><text x="52" y="502" font-size="15" fill="#34445a" font-weight="700">A · 여과될 때 이동하는 물질</text>${chips(['water','glucose','amino'],59,540,2,127)}<text x="52" y="602" font-size="12" fill="#52667d">포도당·아미노산 100% 여과</text></g>
+   <g font-size="27" font-weight="800" fill="#29465b"><rect x="345" y="327" width="124" height="41" rx="9" fill="#d7f3e7"/><text data-process-label="0" x="354" y="356">여과 ↓</text><rect x="461" y="266" width="151" height="43" rx="9" fill="#fff0cf"/><text data-process-label="1" x="472" y="297">재흡수 ↑</text><rect x="628" y="266" width="130" height="43" rx="9" fill="#ede0f7"/><text data-process-label="2" x="642" y="297">분비 ↓</text></g>
+   <g data-process="0"><rect x="35" y="478" width="285" height="135" rx="10" fill="#fff" stroke="#a6b9cb" stroke-width="2"/><path d="M45 478 H310 Q320 478 320 488 V513 H35 V488 Q35 478 45 478" fill="#e0edf8"/><text x="52" y="502" font-size="15" fill="#34445a" font-weight="700">A · 여과될 때 이동하는 물질</text>${chips(['water','glucose','amino'],59,540,2,127)}<text x="52" y="602" font-size="12" fill="#52667d">물·포도당·아미노산 100% 여과</text></g>
    <g data-process="1"><rect x="355" y="478" width="285" height="135" rx="10" fill="#fff" stroke="#a6b9cb" stroke-width="2"/><path d="M365 478 H630 Q640 478 640 488 V513 H355 V488 Q355 478 365 478" fill="#e0edf8"/><text x="372" y="502" font-size="15" fill="#34445a" font-weight="700">B · 재흡수될 때 이동하는 물질</text>${chips(['water','glucose','amino'],378,540,2,125)}<text x="372" y="602" font-size="12" fill="#52667d">포도당·아미노산 100% 재흡수</text></g>
    <g><rect x="675" y="523" width="285" height="90" rx="10" fill="#fff" stroke="#a6b9cb" stroke-width="2"/><path d="M685 523 H950 Q960 523 960 533 V558 H675 V533 Q675 523 685 523" fill="#e0edf8"/><text x="692" y="547" font-size="15" fill="#34445a" font-weight="700">D · 생성된 오줌</text>${chips(['water','urea'],699,585,2,126)}</g>
-   <text x="36" y="636" font-size="12" fill="#748596">혈구·단백질은 혈액에 남아요. 100% 비율을 가정한 모형으로 실제 콩팥의 비율과 달라요.</text>
+   <text x="36" y="636" font-size="12" fill="#748596">혈구·단백질은 혈액에 남아요. 물질별 비율을 가정한 모형으로 실제 콩팥의 비율과 달라요.</text>
   </g>
   <g id="diagram-particles"></g>
  </svg>`;
@@ -55,21 +55,6 @@ export function createDiagram(container) {
   const svg = container.querySelector('svg');
   const particles = [];
   const layer = svg.querySelector('#diagram-particles');
-  function add(pathId, species, count, stage = -1, end = 1) {
-    const path = svg.querySelector(`#${pathId}`);
-    const length = path.getTotalLength();
-    for (let i = 0; i < count; i++) {
-      const circle = document.createElementNS(NS, 'g');
-      circle.innerHTML = symbol(species,.75);
-      circle.setAttribute('fill', colors[species]);
-      circle.setAttribute('stroke', '#122633');
-      circle.setAttribute('stroke-width', '1');
-      circle.dataset.species = species;
-      circle.dataset.route = pathId;
-      layer.append(circle);
-      particles.push({ circle, path, pathId, length, species, i, stage, end, t: (i / count + Object.keys(colors).indexOf(species) * .073) % 1 });
-    }
-  }
   // Invisible, connected paths follow the visible vessels exactly.
   const pathData = {
     inlet:'M210 235 H301 Q330 235 330 270',
@@ -82,6 +67,11 @@ export function createDiagram(container) {
     secrete:'M680 330 V385',
     lateTubule:'M680 385 H900',
     urine:'M900 385 H968',
+    waterEarlyTubule:'M330 350 V362 Q330 385 355 385 H580',
+    waterReabsorb:'M580 385 V330',
+    waterVenousReturn:'M580 330 H717 Q750 330 750 362 V475',
+    waterRemainingTubule:'M580 385 H900',
+    waterUrine:'M900 385 H968',
   };
   const paths = {};
   for (const [id,d] of Object.entries(pathData)) {
@@ -95,30 +85,46 @@ export function createDiagram(container) {
       particles.push({circle,species,journey,length:journey.length,t:(i/10+Object.keys(colors).indexOf(species)*.073)%1,stage:-1});
     }
   }
-  add('blood-in','water',3);add('blood-out','water',7);add('filter','water',3,0);
-  add('tubule','water',20);add('duct','water',10);
-  add('reabsorb','water',5,1);add('water-return','water',12,1);
-  let state = { stage: 0, substance: 'all', playing: true, speed: .5, adh: 45 };
+  const waterJourneys={returned:createJourney('waterReabsorbed',paths),excreted:createJourney('waterExcreted',paths)};
+  for(let i=0;i<20;i++) {
+    const circle=document.createElementNS(NS,'g');circle.innerHTML=symbol('water',.95);circle.dataset.species='water';layer.append(circle);
+    particles.push({circle,species:'water',waterIndex:i,t:i/20,stage:-1});
+  }
+  let state = { stage:0,substance:'all',playing:true,speed:.5,waterReabsorption:80 };
+  function setState(value){
+    state=value;
+    const split=waterSplit(state.waterReabsorption);
+    for(const p of particles)if(p.species==='water'){
+      const destination=p.waterIndex<split.reabsorbed?'returned':'excreted';
+      p.journey=waterJourneys[destination];p.length=p.journey.length;
+      p.circle.dataset.destination=destination;
+      p.circle.querySelector('path').setAttribute('stroke',destination==='returned'?'#1686ac':'#d98b35');
+      p.circle.querySelector('path').setAttribute('stroke-width','1.8');
+    }
+    draw();
+  }
   let elapsed = 0, previous, frame;
+  function draw() {
+    for (const p of particles) {
+      let visible = (state.substance === 'all' || state.substance === p.species) && (p.stage < 0 || state.stage === p.stage);
+      p.circle.style.display = visible ? '' : 'none';
+      const sample=p.journey.sample(p.t*p.length+elapsed*30);
+      const point=sample.point;
+      p.circle.dataset.route=sample.region;p.circle.dataset.region=sample.region;
+      p.circle.setAttribute('cx', point.x); p.circle.setAttribute('cy', point.y);
+      p.circle.setAttribute('transform', `translate(${point.x} ${point.y})`);
+    }
+    for (const [id, stage] of [['filter', 0], ['reabsorb', 1], ['water-return', 1], ['secrete', 2]]) svg.querySelector(`#${id}`).style.opacity = state.stage === stage ? '1' : '.4';
+    svg.querySelectorAll('[data-process]').forEach(panel => panel.querySelector('rect').setAttribute('stroke', Number(panel.dataset.process)===state.stage?'#43829f':'#a6b9cb'));
+  }
   function render(now) {
     const dt = previous === undefined ? 0 : Math.max(0, Math.min((now - previous) / 1000, .05));
     previous = now;
     if (state.playing) elapsed += dt * state.speed;
-    for (const p of particles) {
-      let visible = (state.substance === 'all' || state.substance === p.species) && (p.stage < 0 || state.stage === p.stage);
-      if (p.species === 'water' && p.pathId === 'duct') visible &&= p.i < Math.round(3 + (100 - state.adh) * .07);
-      if (p.pathId === 'water-return') visible &&= p.i < Math.round(3 + state.adh * .09);
-      p.circle.style.display = visible ? '' : 'none';
-      const sample=p.journey?.sample(p.t*p.length+elapsed*30);
-      const point=sample?sample.point:p.path.getPointAtLength((p.t*p.length*p.end+elapsed*30)%(p.length*p.end));
-      if(sample){p.circle.dataset.route=sample.region;p.circle.dataset.region=sample.region;}
-      p.circle.setAttribute('cx', point.x); p.circle.setAttribute('cy', point.y);
-      p.circle.setAttribute('transform', `translate(${point.x} ${point.y})`);
-    }
-    for (const [id, stage] of [['filter', 0], ['reabsorb', 1], ['water-return', 1], ['secrete', 2]]) svg.querySelector(`#${id}`).style.opacity = state.stage === stage ? '1' : '.18';
-    svg.querySelectorAll('[data-process]').forEach(panel => panel.querySelector('rect').setAttribute('stroke', Number(panel.dataset.process)===state.stage?'#43829f':'#a6b9cb'));
+    draw();
     frame = requestAnimationFrame(render);
   }
+  setState(state);
   render(performance.now());
-  return { setState(value) { state = value; }, dispose() { cancelAnimationFrame(frame); } };
+  return { setState, dispose() { cancelAnimationFrame(frame); } };
 }
