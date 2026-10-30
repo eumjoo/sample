@@ -29,7 +29,7 @@ html:not([data-app-ready="true"]) #app button,html:not([data-app-ready="true"]) 
 #boot-fallback{max-width:900px;margin:36px auto;padding:24px}#boot-fallback h1{font-size:28px}#boot-fallback svg{max-height:480px;width:100%}#boot-fallback table{border-collapse:collapse;width:100%;font-size:13px}#boot-fallback th,#boot-fallback td{padding:12px;text-align:left;border-bottom:1px solid #344858}#boot-fallback p{color:#a5bec9;line-height:1.8}#boot-fallback details{margin-top:20px;font-size:11px;color:#7897a4}
 </style></head><body>
 <section id="boot-fallback" hidden><div class="eyebrow">NEPHRON LAB</div><h1>네프론에서 물질은 어디로 갈까요?</h1><p id="startup-status" role="status">혈액에서 작은 물질이 여과되고, 필요한 물질은 다시 혈액으로 돌아갑니다.</p>${staticDiagram}
-<table><thead><tr><th>물질</th><th>이동 경로</th></tr></thead><tbody><tr><td>혈구 · 단백질</td><td>혈관 안에 남음</td></tr><tr><td>포도당 · 아미노산</td><td>여과 → 세뇨관에서 재흡수 → 혈액</td></tr><tr><td>물</td><td>여과 → 대부분 재흡수 → 일부 소변으로 배출</td></tr><tr><td>요소</td><td>여과·분비 → 오줌으로 배출</td></tr></tbody></table>
+<table><thead><tr><th>물질</th><th>이동 경로</th></tr></thead><tbody><tr><td>혈구 · 단백질</td><td>혈관 안에 남음</td></tr><tr><td>포도당 · 아미노산</td><td>100% 여과 → 100% 재흡수 → 혈액</td></tr><tr><td>물</td><td>여과 → 대부분 재흡수 → 일부 소변으로 배출</td></tr><tr><td>요소</td><td>100% 분비 → 오줌으로 배출 (정맥에 남지 않음)</td></tr></tbody></table>
 <p>수분 부족: 물을 더 많이 재흡수하여 소변량 감소<br>물 마신 후: 물의 재흡수가 줄어 소변량 증가</p>
 <noscript><p>현재 정적 그림을 보고 있습니다. JavaScript를 허용하면 상황 선택과 움직이는 입자를 사용할 수 있습니다.</p></noscript>
 <details><summary>오픈 소스 라이선스</summary><pre>${license.replaceAll('&','&amp;').replaceAll('<','&lt;')}</pre></details></section>

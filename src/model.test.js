@@ -9,9 +9,9 @@ test('water balance is conserved for each scenario', () => {
     assert.equal(r.filteredGlucose, r.glucoseReabsorbed + r.glucoseExcretion);
   }
 });
-test('ADH reduces urine and excess glucose spills into urine', () => {
+test('water conservation changes urine while the teaching model fully reabsorbs glucose', () => {
   assert.ok(calculate(presets.dehydrated).urine < calculate(presets.hydrated).urine);
   assert.equal(calculate(presets.normal).glucoseExcretion, 0);
-  assert.ok(calculate({...presets.normal, glucose: 320}).glucoseExcretion > 0);
+  assert.equal(calculate({...presets.normal, glucose: 320}).glucoseExcretion, 0);
   assert.ok(calculate({...presets.normal, adh: 90}).urine < calculate({...presets.normal, adh: 10}).urine);
 });

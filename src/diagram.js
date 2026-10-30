@@ -1,3 +1,4 @@
+import { createJourney, routes } from './routes.js';
 const NS = 'http://www.w3.org/2000/svg';
 const colors = { blood: '#f28d9d', protein: '#bb9aff', urea: '#f2c46e', water: '#6cdbf2', glucose: '#94e3a4', amino: '#f5ac78' };
 
@@ -24,7 +25,7 @@ export const diagramMarkup = `<svg viewBox="0 0 1000 650" role="img" aria-label=
   <g font-family="sans-serif">
    <text x="34" y="35" font-size="16" font-weight="700" fill="#52667d">오줌이 만들어지는 과정</text>
    <g><rect x="35" y="58" width="310" height="137" rx="12" fill="#fff" stroke="#e1a9b3" stroke-width="2"/><path d="M48 58 H332 Q345 58 345 71 V93 H35 V71 Q35 58 48 58" fill="#f5e0e5"/><text x="57" y="82" font-size="15" fill="#533c47" font-weight="700">토리 속 혈액</text>${chips(['blood','protein','water','glucose','amino','urea'],57,120,3,96)}</g>
-   <g data-process="2"><rect x="650" y="61" width="310" height="134" rx="10" fill="#fff" stroke="#a6b9cb" stroke-width="2"/><path d="M660 61 H950 Q960 61 960 71 V96 H650 V71 Q650 61 660 61" fill="#e5e9f4"/><text x="668" y="85" font-size="15" fill="#34445a" font-weight="700">C · 분비될 때 이동하는 물질</text>${chips(['urea'],676,125)}<text x="671" y="175" font-size="12" fill="#6c7483">혈액에 남은 노폐물 · 요소로 표시</text></g>
+   <g data-process="2"><rect x="650" y="61" width="310" height="134" rx="10" fill="#fff" stroke="#a6b9cb" stroke-width="2"/><path d="M660 61 H950 Q960 61 960 71 V96 H650 V71 Q650 61 660 61" fill="#e5e9f4"/><text x="668" y="85" font-size="15" fill="#34445a" font-weight="700">C · 분비될 때 이동하는 물질</text>${chips(['urea'],676,125)}<text x="671" y="175" font-size="12" fill="#6c7483">요소 100% 분비 · 콩팥정맥에는 남지 않음</text></g>
    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
     <path id="blood-in" d="M210 235 H301 Q330 235 330 270" stroke="#e7a1b0" stroke-width="22"/>
     <path id="blood-out" d="M340 275 Q384 261 399 291 V315 Q399 330 425 330 H717 Q750 330 750 362 V475" stroke="#e7a1b0" stroke-width="32"/>
@@ -41,10 +42,10 @@ export const diagramMarkup = `<svg viewBox="0 0 1000 650" role="img" aria-label=
    </g>
    <g font-size="16" fill="#34445a"><text x="206" y="215">콩팥 동맥 →</text><text x="273" y="273">토리</text><text x="207" y="335">보먼주머니</text><text x="411" y="420">세뇨관</text><text x="759" y="319">모세혈관</text><text x="721" y="507">콩팥 정맥 ↓</text><text x="907" y="428">오줌 →</text></g>
    <g font-size="15" font-weight="700" fill="#3c5870"><text x="349" y="348">여과 ↓</text><text x="475" y="306">재흡수 ↑</text><text x="659" y="305">분비 ↓</text></g>
-   <g data-process="0"><rect x="35" y="478" width="285" height="135" rx="10" fill="#fff" stroke="#a6b9cb" stroke-width="2"/><path d="M45 478 H310 Q320 478 320 488 V513 H35 V488 Q35 478 45 478" fill="#e0edf8"/><text x="52" y="502" font-size="15" fill="#34445a" font-weight="700">A · 여과될 때 이동하는 물질</text>${chips(['water','glucose','amino','urea'],59,540,2,127)}</g>
-   <g data-process="1"><rect x="355" y="478" width="285" height="135" rx="10" fill="#fff" stroke="#a6b9cb" stroke-width="2"/><path d="M365 478 H630 Q640 478 640 488 V513 H355 V488 Q355 478 365 478" fill="#e0edf8"/><text x="372" y="502" font-size="15" fill="#34445a" font-weight="700">B · 재흡수될 때 이동하는 물질</text>${chips(['water','glucose','amino'],378,540,2,125)}</g>
+   <g data-process="0"><rect x="35" y="478" width="285" height="135" rx="10" fill="#fff" stroke="#a6b9cb" stroke-width="2"/><path d="M45 478 H310 Q320 478 320 488 V513 H35 V488 Q35 478 45 478" fill="#e0edf8"/><text x="52" y="502" font-size="15" fill="#34445a" font-weight="700">A · 여과될 때 이동하는 물질</text>${chips(['water','glucose','amino'],59,540,2,127)}<text x="52" y="602" font-size="12" fill="#52667d">포도당·아미노산 100% 여과</text></g>
+   <g data-process="1"><rect x="355" y="478" width="285" height="135" rx="10" fill="#fff" stroke="#a6b9cb" stroke-width="2"/><path d="M365 478 H630 Q640 478 640 488 V513 H355 V488 Q355 478 365 478" fill="#e0edf8"/><text x="372" y="502" font-size="15" fill="#34445a" font-weight="700">B · 재흡수될 때 이동하는 물질</text>${chips(['water','glucose','amino'],378,540,2,125)}<text x="372" y="602" font-size="12" fill="#52667d">포도당·아미노산 100% 재흡수</text></g>
    <g><rect x="675" y="523" width="285" height="90" rx="10" fill="#fff" stroke="#a6b9cb" stroke-width="2"/><path d="M685 523 H950 Q960 523 960 533 V558 H675 V533 Q675 523 685 523" fill="#e0edf8"/><text x="692" y="547" font-size="15" fill="#34445a" font-weight="700">D · 생성된 오줌</text>${chips(['water','urea'],699,585,2,126)}</g>
-   <text x="36" y="636" font-size="12" fill="#748596">혈구·단백질은 혈액에 남아요. 화살표를 따라 이동 방향을 살펴보세요.</text>
+   <text x="36" y="636" font-size="12" fill="#748596">혈구·단백질은 혈액에 남아요. 100% 비율을 가정한 모형으로 실제 콩팥의 비율과 달라요.</text>
   </g>
   <g id="diagram-particles"></g>
  </svg>`;
@@ -69,12 +70,34 @@ export function createDiagram(container) {
       particles.push({ circle, path, pathId, length, species, i, stage, end, t: (i / count + Object.keys(colors).indexOf(species) * .073) % 1 });
     }
   }
-  for (const species of Object.keys(colors)) { add('blood-in', species, 3); add('blood-out', species, 7); }
-  for (const species of ['water', 'urea', 'glucose', 'amino']) add('filter', species, 3, 0);
-  for (const species of ['water', 'urea']) { add('tubule', species, 20); add('duct', species, 10); }
-  for (const species of ['glucose', 'amino']) { add('tubule', species, 5, -1, .4); add('reabsorb', species, 3, 1); }
-  add('reabsorb', 'water', 5, 1);
-  add('water-return', 'water', 12, 1); add('secrete', 'urea', 3, 2);
+  // Invisible, connected paths follow the visible vessels exactly.
+  const pathData = {
+    inlet:'M210 235 H301 Q330 235 330 270',
+    retainedBlood:'M330 270 L340 275 Q384 261 399 291 V315 Q399 330 425 330 H717 Q750 330 750 362 V475',
+    bloodToSecretion:'M330 270 L340 275 Q384 261 399 291 V315 Q399 330 425 330 H680',
+    filter:'M330 270 V350',
+    earlyTubule:'M330 350 V362 Q330 385 355 385 H530',
+    reabsorb:'M530 385 V330',
+    venousReturn:'M530 330 H717 Q750 330 750 362 V475',
+    secrete:'M680 330 V385',
+    lateTubule:'M680 385 H900',
+    urine:'M900 385 H968',
+  };
+  const paths = {};
+  for (const [id,d] of Object.entries(pathData)) {
+    const path=document.createElementNS(NS,'path');path.setAttribute('d',d);path.setAttribute('fill','none');path.setAttribute('stroke','none');svg.append(path);
+    const length=path.getTotalLength();paths[id]={length,at:t=>path.getPointAtLength(t*length)};
+  }
+  for (const species of Object.keys(routes)) {
+    const journey=createJourney(species,paths);
+    for(let i=0;i<10;i++) {
+      const circle=document.createElementNS(NS,'g');circle.innerHTML=symbol(species,.75);circle.dataset.species=species;layer.append(circle);
+      particles.push({circle,species,journey,length:journey.length,t:(i/10+Object.keys(colors).indexOf(species)*.073)%1,stage:-1});
+    }
+  }
+  add('blood-in','water',3);add('blood-out','water',7);add('filter','water',3,0);
+  add('tubule','water',20);add('duct','water',10);
+  add('reabsorb','water',5,1);add('water-return','water',12,1);
   let state = { stage: 0, substance: 'all', playing: true, speed: .5, adh: 45 };
   let elapsed = 0, previous, frame;
   function render(now) {
@@ -86,7 +109,9 @@ export function createDiagram(container) {
       if (p.species === 'water' && p.pathId === 'duct') visible &&= p.i < Math.round(3 + (100 - state.adh) * .07);
       if (p.pathId === 'water-return') visible &&= p.i < Math.round(3 + state.adh * .09);
       p.circle.style.display = visible ? '' : 'none';
-      const point = p.path.getPointAtLength((p.t * p.length * p.end + elapsed * 30) % (p.length * p.end));
+      const sample=p.journey?.sample(p.t*p.length+elapsed*30);
+      const point=sample?sample.point:p.path.getPointAtLength((p.t*p.length*p.end+elapsed*30)%(p.length*p.end));
+      if(sample){p.circle.dataset.route=sample.region;p.circle.dataset.region=sample.region;}
       p.circle.setAttribute('cx', point.x); p.circle.setAttribute('cy', point.y);
       p.circle.setAttribute('transform', `translate(${point.x} ${point.y})`);
     }

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { createJourney, routes } from './routes.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 export function createScene(canvas, onError = () => {}) {
@@ -30,12 +31,29 @@ export function createScene(canvas, onError = () => {}) {
  const particles=[];const geometry=new THREE.SphereGeometry(.055,10,8);
  const speciesColors={blood:0xf28d9d,protein:0xbb9aff,urea:0xf2c46e,water:0x6cdbf2,glucose:0x94e3a4,amino:0xf5ac78};
  function addParticles(curve,n,species,stage=-1,start=0,end=1){for(let i=0;i<n;i++){const m=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({color:speciesColors[species],depthTest:false}));m.renderOrder=3;model.add(m);particles.push({mesh:m,curve,t:(i/n+Object.keys(speciesColors).indexOf(species)*.071)%1,index:i,stage,species,start,end});}}
- for(const species of Object.keys(speciesColors)) {addParticles(artery,4,species);addParticles(capillary,9,species);}
- for(const species of ['water','urea','glucose','amino'])addParticles(flows[0],5,species,0);
- for(const species of ['water','urea']){addParticles(tubule,24,species);addParticles(duct,10,species);}
- for(const species of ['glucose','amino']){addParticles(tubule,7,species,-1,0,.22);addParticles(flows[1],7,species,1);}
- addParticles(flows[1],6,'water',1);
- addParticles(flows[2],7,'urea',2);addParticles(waterFlow,12,'water',3);
+ const section=(curve,start,end,prefix=[],suffix=[])=>path([...prefix,...Array.from({length:65},(_,i)=>curve.getPoint(start+(end-start)*i/64).toArray()),...suffix]);
+ const journeyCurves={
+  inlet:artery,
+  retainedBlood:section(capillary,0,1,[artery.getPoint(1).toArray()]),
+  bloodToSecretion:section(capillary,0,.5,[artery.getPoint(1).toArray()],[flows[2].getPoint(0).toArray()]),
+  filter:section(flows[0],0,1,[artery.getPoint(1).toArray()]),
+  earlyTubule:section(tubule,0,.2,[flows[0].getPoint(1).toArray()],[flows[1].getPoint(0).toArray()]),
+  reabsorb:flows[1],
+  venousReturn:section(capillary,.85,1,[flows[1].getPoint(1).toArray()]),
+  secrete:flows[2],
+  lateTubule:section(tubule,.60,1,[flows[2].getPoint(1).toArray()]),
+  urine:section(duct,.28,1,[tubule.getPoint(1).toArray()]),
+ };
+ const journeyPaths=Object.fromEntries(Object.entries(journeyCurves).map(([id,curve])=>[id,{length:curve.getLength(),at:t=>curve.getPointAt(t)}]));
+ for(const species of Object.keys(routes)) {
+  const journey=createJourney(species,journeyPaths);
+  for(let i=0;i<14;i++) {
+   const m=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({color:speciesColors[species],depthTest:false}));m.renderOrder=3;model.add(m);
+   particles.push({mesh:m,journey,t:(i/14+Object.keys(speciesColors).indexOf(species)*.071)%1,stage:-1,species});
+  }
+ }
+ addParticles(artery,4,'water');addParticles(capillary,9,'water');addParticles(flows[0],5,'water',0);
+ addParticles(tubule,24,'water');addParticles(duct,10,'water');addParticles(flows[1],6,'water',1);addParticles(waterFlow,12,'water',3);
  const arrows=[];flows.forEach((c,i)=>{const pos=c.getPoint(.62),dir=c.getTangent(.62);const a=new THREE.ArrowHelper(dir,pos,.32,colors[i],.14,.12);model.add(a);arrows.push(a);});
  let state={stage:0,playing:true,speed:.5,adh:45,gfr:125,substance:'all'};
  const resize=()=>{const {width,height}=canvas.getBoundingClientRect();renderer.setSize(Math.max(width,1),Math.max(height,1),false);camera.aspect=Math.max(width,1)/Math.max(height,1);camera.updateProjectionMatrix();};const observer=new ResizeObserver(resize);observer.observe(canvas);resize();
@@ -45,6 +63,6 @@ export function createScene(canvas, onError = () => {}) {
  canvas.addEventListener('webglcontextlost',contextLost);
  const dispose=()=>{if(disposed)return;disposed=true;renderer.setAnimationLoop(null);observer.disconnect();controls.dispose();canvas.removeEventListener('webglcontextlost',contextLost);model.traverse(object=>{object.geometry?.dispose();if(object.material){for(const material of [object.material].flat())material.dispose();}});renderer.dispose();};
 
- renderer.setAnimationLoop((timestamp)=>{try {const now=Number.isFinite(timestamp)?timestamp:performance.now();const delta=Math.max(0,Math.min((now-last)/1000,.05));last=now;controls.update();for(const p of particles){p.mesh.visible=(state.substance==='all'||p.species===state.substance)&&(p.stage<0||p.stage===state.stage||(p.stage===3&&state.stage===1));if(p.species==='water'&&p.curve===duct)p.mesh.visible=p.mesh.visible&&p.index<Math.round(3+(100-state.adh)*.07);if(p.stage===3)p.mesh.visible=p.mesh.visible&&p.index<Math.round(3+state.adh*.09);if(state.playing)p.t=(p.t+delta*.3/p.curve.getLength()*state.speed*(p.stage===3?.3+state.adh/100:state.gfr/125))%1;p.mesh.position.copy(p.curve.getPoint(p.start+p.t*(p.end-p.start)));p.mesh.scale.setScalar(p.species==='blood'?1.6:p.species==='protein'?1.3:p.stage>=0?1.2:.85); }arrows.forEach((a,i)=>a.visible=i===state.stage);renderer.render(scene,camera);}catch(error){fail();}});
+ renderer.setAnimationLoop((timestamp)=>{try {const now=Number.isFinite(timestamp)?timestamp:performance.now();const delta=Math.max(0,Math.min((now-last)/1000,.05));last=now;controls.update();for(const p of particles){p.mesh.visible=(state.substance==='all'||p.species===state.substance)&&(p.stage<0||p.stage===state.stage||(p.stage===3&&state.stage===1));if(p.species==='water'&&p.curve===duct)p.mesh.visible=p.mesh.visible&&p.index<Math.round(3+(100-state.adh)*.07);if(p.stage===3)p.mesh.visible=p.mesh.visible&&p.index<Math.round(3+state.adh*.09);if(state.playing)p.t=(p.t+delta*.3/(p.journey?.length??p.curve.getLength())*state.speed*(p.journey?1:p.stage===3?.3+state.adh/100:state.gfr/125))%1;const sample=p.journey?.sample(p.t*p.journey.length);p.mesh.position.copy(sample?sample.point:p.curve.getPoint(p.start+p.t*(p.end-p.start)));if(sample)p.mesh.userData.region=sample.region;p.mesh.scale.setScalar(p.species==='blood'?1.6:p.species==='protein'?1.3:p.stage>=0?1.2:.85); }arrows.forEach((a,i)=>a.visible=i===state.stage);renderer.render(scene,camera);}catch(error){fail();}});
  return {dispose,setState(v){state=v;},rotate(on){controls.autoRotate=on;},reset(){controls.autoRotate=false;camera.position.set(0,.8,15);controls.target.set(0,-.1,0);controls.update();},view(type){camera.position.set(type==='front'?0:5,type==='front'?.1:2,15);controls.update();}};
 }

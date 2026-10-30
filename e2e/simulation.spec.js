@@ -1,4 +1,32 @@
 import { test, expect } from '@playwright/test';
+test('particles obey complete 100% teaching-model routes in every scenario and stage',async({page})=>{
+ await page.goto('/');
+ for(const scenario of ['normal','dehydrated','hydrated']){
+  await page.selectOption('#scenario',scenario);
+  for(const stage of [0,1,2]){
+   await page.locator(`[data-stage="${stage}"]`).click();
+   await expect.poll(()=>page.locator('#diagram-particles [data-region]').count()).toBe(50);
+   const samples=await page.locator('#diagram-particles [data-region]').evaluateAll(elements=>elements.map(el=>({species:el.dataset.species,region:el.dataset.region,x:Number(el.getAttribute('cx')),y:Number(el.getAttribute('cy'))})));
+   for(const p of samples){
+    if(p.species==='urea'){
+     expect(['inlet','bloodToSecretion','secrete','lateTubule','urine']).toContain(p.region);
+     expect(p.region).not.toMatch(/venous|retained/);
+     if(p.region==='bloodToSecretion')expect(p.x).toBeLessThanOrEqual(680);
+    }
+    if(p.species==='glucose'||p.species==='amino'){
+     expect(['inlet','filter','earlyTubule','reabsorb','venousReturn']).toContain(p.region);
+     expect(p.region).not.toMatch(/urine|lateTubule|retained/);
+     if(p.region==='earlyTubule')expect(p.x).toBeLessThanOrEqual(530);
+    }
+   }
+  }
+ }
+ await page.locator('[data-substance=urea]').click();
+ await expect(page.locator('#substance-note')).toContainText('100%');
+ await expect(page.locator('#substance-note')).toContainText('콩팥정맥');
+ await expect(page.locator('#diagram [data-process="0"]')).not.toContainText('요소');
+ await expect(page.locator('#diagram [data-process="1"]')).toContainText('100% 재흡수');
+});
 test('middle-school labels and slow motion match the lesson',async({page})=>{
  await page.clock.install({time:new Date('2026-10-30T00:00:00Z')});
  await page.clock.pauseAt(new Date('2026-10-30T00:00:01Z'));
@@ -7,7 +35,7 @@ test('middle-school labels and slow motion match the lesson',async({page})=>{
  expect(content).not.toMatch(/근위|원위|헨레|헨리|집합관|ADH|무기염류|재순환/);
  await expect(page.locator('#speed')).toHaveText('0.5×');
  await expect(page.locator('[data-substance]')).toHaveCount(7);
- const particle=page.locator('#diagram-particles [data-species=blood][data-route=blood-in]').first();
+ const particle=page.locator('#diagram-particles [data-species=blood][data-route=inlet]').first();
  const position=()=>particle.evaluate(el=>({x:Number(el.getAttribute('cx')),y:Number(el.getAttribute('cy'))}));
  const a=await position();await page.clock.runFor(1000);const b=await position();
  const slow=Math.hypot(b.x-a.x,b.y-a.y);
